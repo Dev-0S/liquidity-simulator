@@ -68,7 +68,7 @@ startOpenBook(handleBookUpdate);
 // ---------------------------------------------------------------------------
 // Listen
 // ---------------------------------------------------------------------------
-server.listen(PORT, () => {
+server.listen(PORT, '0.0.0.0', () => {
   console.log(`${PREFIX} Listening on http://localhost:${PORT}`);
   console.log(`${PREFIX} WebSocket available at ws://localhost:${PORT}/ws`);
   console.log(`${PREFIX} Health check: http://localhost:${PORT}/api/health`);
