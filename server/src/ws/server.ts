@@ -59,8 +59,15 @@ export function setupWebSocket(
 function sendSnapshots(ws: WebSocket): void {
   if (!bookCacheRef) return;
 
+  const maxLevels = parseInt(process.env.MAX_BOOK_LEVELS || '10', 10);
+
   for (const book of bookCacheRef.values()) {
-    const msg: WsMessage = { type: 'snapshot', data: book };
+    const trimmed: Book = {
+      ...book,
+      bids: book.bids.slice(0, maxLevels),
+      asks: book.asks.slice(0, maxLevels),
+    };
+    const msg: WsMessage = { type: 'snapshot', data: trimmed };
     broadcaster.sendTo(ws, msg);
   }
 }

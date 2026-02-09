@@ -25,6 +25,22 @@ const PREFIX = '[server]';
 // ---------------------------------------------------------------------------
 const bookCache = new Map<string, Book>();
 
+// ---------------------------------------------------------------------------
+// Throttled broadcast: max 1 broadcast per pair every THROTTLE_MS
+// Keeps the full book in cache but only sends trimmed updates to clients
+// ---------------------------------------------------------------------------
+const THROTTLE_MS = parseInt(process.env.BROADCAST_THROTTLE_MS || '250', 10);
+const MAX_LEVELS = parseInt(process.env.MAX_BOOK_LEVELS || '10', 10);
+const lastBroadcast = new Map<string, number>();
+
+function trimBook(book: Book): Book {
+  return {
+    ...book,
+    bids: book.bids.slice(0, MAX_LEVELS),
+    asks: book.asks.slice(0, MAX_LEVELS),
+  };
+}
+
 /**
  * Shared handler invoked by both Binance and OpenBook venue adapters
  * whenever a new order book update arrives.
@@ -33,7 +49,13 @@ function handleBookUpdate(book: Book): void {
   const key = `${book.venue}:${book.symbol}`;
   bookCache.set(key, book);
 
-  const msg: WsMessage = { type: 'book_update', data: book };
+  // Throttle: only broadcast if enough time has passed since last send
+  const now = Date.now();
+  const last = lastBroadcast.get(key) || 0;
+  if (now - last < THROTTLE_MS) return;
+  lastBroadcast.set(key, now);
+
+  const msg: WsMessage = { type: 'book_update', data: trimBook(book) };
   broadcaster.broadcast(msg);
 }
 
