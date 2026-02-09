@@ -60,10 +60,19 @@ const server = http.createServer(app);
 setupWebSocket(server, bookCache);
 
 // ---------------------------------------------------------------------------
-// Start venue ingestion
+// Start venue ingestion (wrapped so a failure doesn't crash the server)
 // ---------------------------------------------------------------------------
-startBinance(handleBookUpdate);
-startOpenBook(handleBookUpdate);
+try {
+  startBinance(handleBookUpdate);
+} catch (err) {
+  console.error(`${PREFIX} Failed to start Binance ingestion:`, err);
+}
+
+try {
+  startOpenBook(handleBookUpdate);
+} catch (err) {
+  console.error(`${PREFIX} Failed to start OpenBook ingestion:`, err);
+}
 
 // ---------------------------------------------------------------------------
 // Listen
