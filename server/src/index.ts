@@ -42,7 +42,9 @@ function handleBookUpdate(book: Book): void {
 // ---------------------------------------------------------------------------
 const app = express();
 
-app.use(cors());
+app.use(cors({
+  origin: process.env.CORS_ORIGIN || '*',
+}));
 app.use(express.json());
 
 // Mount route handlers

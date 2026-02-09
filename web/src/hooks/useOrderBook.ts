@@ -58,8 +58,16 @@ export function useOrderBook(): OrderBookState {
 
     setConnectionStatus('connecting');
 
-    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const wsUrl = `${protocol}//${window.location.host}/ws`;
+    // In production, use VITE_WS_URL env var pointing to the deployed backend.
+    // In dev, the Vite proxy handles it via the relative path.
+    const envWsUrl = import.meta.env.VITE_WS_URL;
+    let wsUrl: string;
+    if (envWsUrl) {
+      wsUrl = envWsUrl;
+    } else {
+      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      wsUrl = `${protocol}//${window.location.host}/ws`;
+    }
     const ws = new WebSocket(wsUrl);
     wsRef.current = ws;
 
