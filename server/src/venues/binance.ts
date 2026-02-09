@@ -27,7 +27,10 @@ function connectPair(
 ): void {
   const { pair } = conn;
   const streamName = `${pair.binanceSymbol}@depth20@100ms`;
-  const url = `wss://stream.binance.com:9443/ws/${streamName}`;
+  // Use BINANCE_WS_BASE env var to allow switching between global and US endpoints.
+  // Binance global (stream.binance.com) blocks US IPs; use binance.us for US deployments.
+  const wsBase = process.env.BINANCE_WS_BASE || 'wss://stream.binance.us:9443/ws';
+  const url = `${wsBase}/${streamName}`;
 
   console.log(`${PREFIX} Connecting to ${url}`);
 
